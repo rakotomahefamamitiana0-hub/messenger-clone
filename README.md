@@ -54,13 +54,65 @@ npm run build
 
 ## Deployment
 
-This app is ready to be deployed as a demo on a Node host such as Render or Railway for the backend, and Vercel or Netlify for the frontend.
+### Backend (Render)
 
-Set these variables in production:
-- VITE_API_URL=https://your-backend-url
-- CLIENT_URL=https://your-frontend-url
-- PORT=5000
-- JWT_SECRET=your-secure-secret
+1. Push to GitHub (already done)
+2. Create a new Web Service on Render
+3. Connect your GitHub repo
+4. Configure:
+   - **Root Directory**: `server`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
+5. Add Environment Variables:
+   ```
+   PORT=5000
+   JWT_SECRET=your-very-secure-random-string-here
+   CLIENT_URL=https://your-vercel-frontend-url
+   ```
+6. Deploy
+
+**After Render deploys**, copy your backend URL (e.g., `https://messenger-clone-backend.onrender.com`)
+
+### Frontend (Vercel)
+
+1. Go to https://vercel.com and sign in with GitHub
+2. Click "Add New" → "Project"
+3. Import your `messenger-clone` repository
+4. Configure:
+   - **Framework Preset**: Vite
+   - **Root Directory**: `client`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+5. Add Environment Variables (BEFORE deploying):
+   ```
+   VITE_API_URL=https://messenger-clone-backend.onrender.com
+   ```
+   (Replace with your actual Render backend URL)
+6. Click "Deploy"
+
+**After Vercel deploys**, copy your frontend URL (e.g., `https://messenger-clone.vercel.app`)
+
+### Final Step: Update Render Backend
+
+1. Go back to Render dashboard
+2. Open your backend service
+3. Edit Environment Variables
+4. Update `CLIENT_URL` to your Vercel URL:
+   ```
+   CLIENT_URL=https://messenger-clone.vercel.app
+   ```
+5. Click "Deploy" to restart the service
+
+---
+
+## Environment Variables Summary
+
+| Variable | Where | Value | Example |
+|----------|-------|-------|---------|
+| `VITE_API_URL` | Vercel (Frontend) | Your Render backend URL | `https://messenger-clone-backend.onrender.com` |
+| `PORT` | Render (Backend) | Always `5000` | `5000` |
+| `JWT_SECRET` | Render (Backend) | Any strong random string | `your-secure-random-secret` |
+| `CLIENT_URL` | Render (Backend) | Your Vercel frontend URL | `https://messenger-clone.vercel.app` |
 
 ## Demo usage
 
