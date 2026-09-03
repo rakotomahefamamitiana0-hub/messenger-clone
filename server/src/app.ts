@@ -11,7 +11,11 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 const clientOrigin = process.env.CLIENT_URL || 'http://localhost:3000';
-const allowedOrigins = [clientOrigin, 'https://messenger-clone-kohl-phi.vercel.app'];
+const allowedOrigins = [
+  clientOrigin,
+  'https://messenger-clone-kohl-phi.vercel.app',
+  'https://messenger-clone-ekpg.vercel.app',
+];
 const isAllowedOrigin = (origin?: string) => !origin || allowedOrigins.includes(origin);
 
 const io = new Server(httpServer, {
