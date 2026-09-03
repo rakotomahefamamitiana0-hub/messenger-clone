@@ -16,7 +16,10 @@ type Message = {
 };
 
 const STORAGE_KEY = 'messenger-clone-user';
-const API_BASE = (import.meta.env.VITE_API_URL as string) || 'http://localhost:5000';
+const configuredApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
+const API_BASE = configuredApiUrl?.includes('.onrender.com')
+  ? configuredApiUrl
+  : 'https://messenger-clone-3.onrender.com';
 
 const createId = () => Math.random().toString(36).slice(2, 10);
 
