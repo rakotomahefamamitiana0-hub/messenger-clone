@@ -11,10 +11,12 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 const clientOrigin = process.env.CLIENT_URL || 'http://localhost:3000';
+const allowedOrigins = [clientOrigin, 'https://messenger-clone-kohl-phi.vercel.app'];
+const isAllowedOrigin = (origin?: string) => !origin || allowedOrigins.includes(origin);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: clientOrigin,
+    origin: isAllowedOrigin,
     methods: ['GET', 'POST'],
   },
 });
@@ -22,8 +24,8 @@ const io = new Server(httpServer, {
 const users: Array<{ id: string; username: string; email: string; password: string }> = [];
 const messages: Array<{ id: string; sender: string; text: string; room: string; time: string }> = [];
 
-app.use(cors({ origin: clientOrigin, credentials: true }));
-app.options('*', cors({ origin: clientOrigin, credentials: true }));
+app.use(cors({ origin: isAllowedOrigin, credentials: true }));
+app.options('*', cors({ origin: isAllowedOrigin, credentials: true }));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
