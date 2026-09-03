@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 type User = {
@@ -45,6 +45,7 @@ export default function App() {
   ]);
   const [status, setStatus] = useState('');
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -57,14 +58,18 @@ export default function App() {
     const socketClient = io(API_BASE, { transports: ['websocket'] });
     setSocket(socketClient);
 
-    socketClient.emit('join-room', chatRoom);
+    socketClient.emit('join-room', { room: chatRoom, username: user.username });
 
     socketClient.on('room-message', (payload: Message) => {
-      setMessages((current) => [...current, payload]);
+      setMessages((current) => current.some((item) => item.id === payload.id) ? current : [...current, payload]);
     });
+
+    socketClient.on('room-users', (users: string[]) => setOnlineUsers(users));
 
     return () => {
       socketClient.disconnect();
+      setSocket(null);
+      setOnlineUsers([]);
     };
   }, [user, chatRoom]);
 
@@ -120,7 +125,6 @@ export default function App() {
     };
 
     socket.emit('send-message', payload);
-    setMessages((current) => [...current, payload]);
     setMessage('');
   };
 
@@ -129,8 +133,6 @@ export default function App() {
     localStorage.removeItem(STORAGE_KEY);
     setStatus('Déconnecté.');
   };
-
-  const roomUsers = useMemo(() => (user ? [user.username, 'Alice', 'Bob', 'Charlie'] : []), [user]);
 
   if (!user) {
     return (
@@ -195,7 +197,7 @@ export default function App() {
         <div className="presence-box">
           <h3>En ligne</h3>
           <ul>
-            {roomUsers.map((person) => (
+            {onlineUsers.map((person) => (
               <li key={person}>{person}</li>
             ))}
           </ul>

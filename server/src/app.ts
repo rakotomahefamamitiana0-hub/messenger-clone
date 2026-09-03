@@ -29,6 +29,16 @@ const io = new Server(httpServer, {
 
 const users: Array<{ id: string; username: string; email: string; password: string }> = [];
 const messages: Array<{ id: string; sender: string; text: string; room: string; time: string }> = [];
+const socketRooms = new Map<string, { room: string; username: string }>();
+
+const broadcastRoomUsers = (room: string) => {
+  const roomUsers = [...socketRooms.values()]
+    .filter((member) => member.room === room)
+    .map((member) => member.username)
+    .filter((username, index, all) => all.indexOf(username) === index);
+
+  io.to(room).emit('room-users', roomUsers);
+};
 
 app.use(cors({ origin: corsOrigin, credentials: true }));
 app.options('*', cors({ origin: corsOrigin, credentials: true }));
@@ -96,8 +106,16 @@ app.get('/api/messages', (_req, res) => {
 });
 
 io.on('connection', (socket) => {
-  socket.on('join-room', (room: string) => {
+  socket.on('join-room', ({ room, username }: { room: string; username: string }) => {
+    const previous = socketRooms.get(socket.id);
+    if (previous && previous.room !== room) {
+      socket.leave(previous.room);
+      broadcastRoomUsers(previous.room);
+    }
+
     socket.join(room);
+    socketRooms.set(socket.id, { room, username });
+    broadcastRoomUsers(room);
   });
 
   socket.on('send-message', (payload: { id?: string; sender: string; text: string; room: string; time?: string }) => {
@@ -111,6 +129,12 @@ io.on('connection', (socket) => {
 
     messages.push(message);
     io.to(payload.room).emit('room-message', message);
+  });
+
+  socket.on('disconnect', () => {
+    const membership = socketRooms.get(socket.id);
+    socketRooms.delete(socket.id);
+    if (membership) broadcastRoomUsers(membership.room);
   });
 });
 
