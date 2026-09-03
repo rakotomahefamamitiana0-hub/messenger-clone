@@ -16,11 +16,13 @@ const allowedOrigins = [
   'https://messenger-clone-kohl-phi.vercel.app',
   'https://messenger-clone-ekpg.vercel.app',
 ];
-const isAllowedOrigin = (origin?: string) => !origin || allowedOrigins.includes(origin);
+const corsOrigin = (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
+  callback(null, !origin || allowedOrigins.includes(origin));
+};
 
 const io = new Server(httpServer, {
   cors: {
-    origin: isAllowedOrigin,
+    origin: corsOrigin,
     methods: ['GET', 'POST'],
   },
 });
@@ -28,8 +30,8 @@ const io = new Server(httpServer, {
 const users: Array<{ id: string; username: string; email: string; password: string }> = [];
 const messages: Array<{ id: string; sender: string; text: string; room: string; time: string }> = [];
 
-app.use(cors({ origin: isAllowedOrigin, credentials: true }));
-app.options('*', cors({ origin: isAllowedOrigin, credentials: true }));
+app.use(cors({ origin: corsOrigin, credentials: true }));
+app.options('*', cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
