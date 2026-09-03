@@ -58,6 +58,11 @@ export default function App() {
     const socketClient = io(API_BASE, { transports: ['websocket'] });
     setSocket(socketClient);
 
+    fetch(`${API_BASE}/api/messages?room=${encodeURIComponent(chatRoom)}`)
+      .then((response) => response.json())
+      .then((storedMessages: Message[]) => setMessages(storedMessages))
+      .catch(() => setStatus('Impossible de charger les messages précédents.'));
+
     socketClient.emit('join-room', { room: chatRoom, username: user.username });
 
     socketClient.on('room-message', (payload: Message) => {

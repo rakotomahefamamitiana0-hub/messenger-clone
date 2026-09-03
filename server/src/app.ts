@@ -101,8 +101,9 @@ app.get('/api/users', (_req, res) => {
   res.json(users.map(({ id, username, email }) => ({ id, username, email })));
 });
 
-app.get('/api/messages', (_req, res) => {
-  res.json(messages);
+app.get('/api/messages', (req, res) => {
+  const room = typeof req.query.room === 'string' ? req.query.room : undefined;
+  res.json(room ? messages.filter((message) => message.room === room) : messages);
 });
 
 io.on('connection', (socket) => {
